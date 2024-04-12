@@ -29,7 +29,10 @@
           <td>${student.studentName}</td>
           <td>${student.age}</td>
           <td style="color: red">${student.status?"Hoạt động":"Không hoạt động"}</td>
-          <td></td>
+          <td>
+            <a href="<%=request.getContextPath()%>/StudentController?studentId=${student.studentId}&action=initUpdate">Update</a>
+            <a href="<%=request.getContextPath()%>/StudentController?studentId=${student.studentId}&action=Delete">Delete</a>
+          </td>
         </tr>
       </c:forEach>
     </tbody>

@@ -20,21 +20,42 @@ public class StudentController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        getAllStudent(request,response);
+        String action = request.getParameter("action");
+        if (action.equals("getAll")) {
+            getAllStudent(request, response);
+        } else if (action.equals("initUpdate")) {
+            //Lấy thông tin sinh viên để sửa
+            int studentIdUpdate = Integer.parseInt(request.getParameter("studentId"));
+            Student student = studentService.findById(studentIdUpdate);
+            if (student != null) {
+                request.setAttribute("student", student);
+                request.getRequestDispatcher("views/updateStudent.jsp").forward(request, response);
+            } else {
+                request.getRequestDispatcher("views/error.jsp").forward(request, response);
+            }
+        } else if (action.equals("Delete")) {
+            int studentIdDelete = Integer.parseInt(request.getParameter("studentId"));
+            boolean result = studentService.delete(studentIdDelete);
+            if (result){
+                getAllStudent(request,response);
+            }else{
+                request.getRequestDispatcher("views/error.jsp").forward(request, response);
+            }
+        }
+
     }
 
     public void getAllStudent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         //Nhận request, phân tích request, lựa chọn service và lựa view hiển thị
         //1. Lấy tham số action trên URL (GET) --> phân tích request
-        String action = request.getParameter("action");
-        System.out.println("ACTION ---> "+action);
+
         //2. Lựa chọn service thực hiện
         List<Student> listStudent = studentService.findAll();
         //3. Nhận kết quả trả về của service, chọn view thích hợp để hiển thị dữ liệu lên browser
         //3.1. Chuyển listStudent sang view có tên là students.jsp --> cho dữ liệu vào request
-        request.setAttribute("listStudent",listStudent);
+        request.setAttribute("listStudent", listStudent);
         //3.2. forward toàn bộ request và response sang students.jsp
-        request.getRequestDispatcher("views/students.jsp").forward(request,response);
+        request.getRequestDispatcher("views/students.jsp").forward(request, response);
     }
 
     @Override
@@ -42,7 +63,7 @@ public class StudentController extends HttpServlet {
         //set trên servlet hỗ trợ UTF-8
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
-        if (action.equals("Create")){
+        if (action.equals("Create")) {
             //Thực hiện thêm mới sinh viên
             //1. Lấy dữ liệu sinh viên cần thêm mới ở body của request
             Student student = new Student();
@@ -51,11 +72,25 @@ public class StudentController extends HttpServlet {
             student.setStatus(Boolean.parseBoolean(request.getParameter("status")));
             //2. Chọn service thích hợp để thực hiện thêm mới sinh viên
             boolean result = studentService.save(student);
-            if (result){
+            if (result) {
                 //Thêm mới thành công
-                getAllStudent(request,response);
-            }else{
+                getAllStudent(request, response);
+            } else {
                 //Thêm mới thất bại
+                request.getRequestDispatcher("views/error.jsp").forward(request, response);
+            }
+        } else if (action.equals("Update")) {
+            //Thực hiện update
+            Student studentUpdate = new Student();
+            studentUpdate.setStudentId(Integer.parseInt(request.getParameter("studentId")));
+            studentUpdate.setStudentName(request.getParameter("studentName"));
+            studentUpdate.setAge(Integer.parseInt(request.getParameter("age")));
+            studentUpdate.setStatus(Boolean.parseBoolean(request.getParameter("status")));
+            //Gọi service
+            boolean result = studentService.update(studentUpdate);
+            if (result){
+                getAllStudent(request,response);
+            }else {
                 request.getRequestDispatcher("views/error.jsp").forward(request,response);
             }
         }
